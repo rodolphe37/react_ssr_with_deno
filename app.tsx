@@ -1,24 +1,24 @@
 import { React } from "./deps.ts";
 
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      button: any;
-      div: any;
-      h1: any;
-      p: any;
-    }
-  }
-}
-
 const App = () => {
-  const [count, setCount] = (React as any).useState(0);
+  const [count, setCount] = React.useState(0);
+
+  const garden = {
+    backgroundColor: 'green',
+    height: 'auto',
+    fontSize: '30px',
+    maxWidth: '400px',
+    padding: '20px 5px',
+    width: '100%'
+  };
 
   return (
-    <div>
-      <h1>Hello DenoLand!</h1>
-      <button onClick={() => setCount(count + 1)}>Click the 🦕</button>
-      <p>You clicked the 🦕 {count} times</p>
+    <div className="pure-g pure-u">
+      <h2>My DenoReact App</h2>
+      <button className="pure-button" onClick={() => setCount(count + 1)}>Add a 🦕 in your garden!</button>
+      <p style={garden}>
+        {Array(count).fill(<span>🦕</span>)}
+      </p>
     </div>
   );
 };

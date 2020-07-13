@@ -1,30 +1,51 @@
 import {
-  opine,
+  Application,
+  Context,
   React,
   ReactDOMServer,
-} from "./deps.ts";
+  Router,
+} from './deps.ts';
 
 import App from "./app.tsx";
 
-const app = opine();
-const browserBundlePath = "/browser.js";
+const PORT = 8008;
+
+const app = new Application();
+const jsBundle = "/main.js";
 
 const js =
-  `import React from "https://dev.jspm.io/react@16.13.1";\nimport ReactDOM from "https://dev.jspm.io/react-dom@16.13.1";\nconst App = ${App};\nReactDOM.hydrate(React.createElement(App), document.body);`;
+  `import React from "https://jspm.dev/react@16.13.1";
+ import ReactDOM from "https://jspm.dev/react-dom@16.13.1";
+ const App = ${App};
+ ReactDOM.hydrate(React.createElement(App), document.getElementById('app'));`;
+
 
 const html =
-  `<html><head><script type="module" src="${browserBundlePath}"></script><style>* { font-family: Helvetica; }</style></head><body>${
-  (ReactDOMServer as any).renderToString(<App />)
-  }</body></html>`;
+  `<html>
+    <head>
+      <link rel="stylesheet" href="https://unpkg.com/purecss@2.0.3/build/pure-min.css">
+      <script type="module" src="${jsBundle}"></script>
+    </head>
+    <body>
+      <main id="app">${ReactDOMServer.renderToString(<App />)}</main>
+    </body>
+  </html>`;
 
-app.use(browserBundlePath, (req, res, next) => {
-  res.type("application/javascript").send(js);
-});
+const router = new Router();
+router
+  .get('/', (context: Context) => {
+    context.response.type = 'text/html';
+    context.response.body = html;
+  })
+  .get(jsBundle, (context: Context) => {
+    context.response.type = 'application/javascript';
+    context.response.body = js;
+  });
 
-app.use("/", (req, res, next) => {
-  res.type("text/html").send(html);
-});
+app.use(router.routes());
+app.use(router.allowedMethods());
 
-app.listen({ port: 3000 });
+console.log(`Listening on port ${PORT}...`);
 
-console.log("React SSR App listening on port 3000");
+await app.listen({ port: PORT });
+
